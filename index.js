@@ -44,8 +44,11 @@ const formattedText = text
       if (parts.length >= 6) {
         let growth = parseFloat(parts[4]);
         if (!isNaN(growth)) {
-          // Chỉ nhân 100 nếu giá trị nằm giữa -1 và 1 (ví dụ 1 => 100%, 0.5 => 50%)
-          if (Math.abs(growth) < 1 && growth !== 0) {
+          // Logic thông minh:
+          // - Nếu giá trị là giữa -10 và 10  (ví dụ: 1, -1, 0.5, -0.8) → nhân 100
+          // - Nếu giá trị > 10 hoặc < -10 (ví dụ: 50, -16.67, 2000) → giữ nguyên
+          // - Nếu growth = 0 → giữ nguyên
+          if (growth !== 0 && Math.abs(growth) < 10) {
             growth = (growth * 100).toFixed(2) + "%";
           } else {
             growth = growth.toFixed(2) + "%";
@@ -60,6 +63,7 @@ const formattedText = text
     return line;
   })
   .join("\n");
+
 
 
       await interaction.editReply(
