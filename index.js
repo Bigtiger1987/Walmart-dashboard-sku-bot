@@ -37,21 +37,32 @@ client.on("interactionCreate", async (interaction) => {
       const response = await fetch(`${SCRIPT_URL}?sku=${sku}`);
       const text = await response.text();
 
-      // Nếu giá trị trong sheet đã là phần trăm (>=1 hoặc <=-1) thì giữ nguyên,
-// chỉ nhân 100 nếu là số nhỏ hơn 1 (ví dụ 0.5 => 50%)
-const formattedText = text.replace(
-  /\|\s*(-?\d*\.?\d+)/g,
-  (match, num) => {
-    const value = parseFloat(num);
-    if (Math.abs(value) < 1 && value !== 0) {
-      const percent = (value * 100).toFixed(2) + "%";
-      return `| ${percent.padStart(6, " ")}`;
-    } else {
-      // nếu đã là số nguyên hoặc số lớn hơn 1, chỉ thêm ký hiệu %
-      return `| ${value.toFixed(2)}%`;
+// === Format phần trăm chỉ cho cột % Growth ===
+const formattedText = text
+  .split("\n")
+  .map((line) => {
+    // Chỉ xử lý những dòng có dữ liệu (Month | Orders...)
+    if (line.match(/^\d/)) {
+      const parts = line.split("|").map((p) => p.trim());
+      if (parts.length >= 6) {
+        // Cột % Growth là phần tử thứ 5 (index 4)
+        let growth = parseFloat(parts[4]);
+        if (!isNaN(growth)) {
+          if (Math.abs(growth) < 1 && growth !== 0) {
+            growth = (growth * 100).toFixed(2) + "%";
+          } else {
+            growth = growth.toFixed(2) + "%";
+          }
+        } else {
+          growth = parts[4];
+        }
+        parts[4] = growth;
+        return parts.join(" | ");
+      }
     }
-  }
-);
+    return line;
+  })
+  .join("\n");
 
 
       await interaction.editReply(
