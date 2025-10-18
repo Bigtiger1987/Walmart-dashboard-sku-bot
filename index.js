@@ -35,37 +35,6 @@ client.on("interactionCreate", async (interaction) => {
       const response = await fetch(`${SCRIPT_URL}?sku=${sku}`);
       let text = await response.text();
 
-     // === Format lại phần trăm chính xác cho Walmart ===
-const formattedText = text
-  .split("\n")
-  .map((line) => {
-    if (/^\d/.test(line)) {
-      const parts = line.split("|").map((p) => p.trim());
-      if (parts.length >= 6) {
-        let growth = parseFloat(parts[4]);
-        if (!isNaN(growth)) {
-          // Logic thông minh:
-          // - Nếu giá trị là giữa -10 và 10  (ví dụ: 1, -1, 0.5, -0.8) → nhân 100
-          // - Nếu giá trị > 10 hoặc < -10 (ví dụ: 50, -16.67, 2000) → giữ nguyên
-          // - Nếu growth = 0 → giữ nguyên
-          if (growth !== 0 && Math.abs(growth) < 10) {
-            growth = (growth * 100).toFixed(2) + "%";
-          } else {
-            growth = growth.toFixed(2) + "%";
-          }
-        } else {
-          growth = parts[4];
-        }
-        parts[4] = growth;
-        return parts.join(" | ");
-      }
-    }
-    return line;
-  })
-  .join("\n");
-
-
-
       await interaction.editReply(
         `📊 **SKU:** **${sku}**\n\`\`\`\n${formattedText}\n\`\`\``,
       );
