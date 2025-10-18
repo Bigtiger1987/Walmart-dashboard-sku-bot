@@ -1,0 +1,15 @@
+{
+  "name": "sheet-sku-bot",
+  "version": "1.0.0",
+  "description": "Discord bot fetches SKU report from Google Script",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
+}
