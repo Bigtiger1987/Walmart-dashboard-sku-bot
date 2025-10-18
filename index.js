@@ -35,9 +35,8 @@ client.on("interactionCreate", async (interaction) => {
       const response = await fetch(`${SCRIPT_URL}?sku=${sku}`);
       let text = await response.text();
 
-      await interaction.editReply(
-        `📊 **SKU:** **${sku}**\n\`\`\`\n${formattedText}\n\`\`\``,
-      );
+      await interaction.editReply(text);
+
     } catch (err) {
       await interaction.editReply("❌ Lỗi khi lấy dữ liệu từ Google Script!");
       console.error(err);
