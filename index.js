@@ -37,15 +37,22 @@ client.on("interactionCreate", async (interaction) => {
       const response = await fetch(`${SCRIPT_URL}?sku=${sku}`);
       const text = await response.text();
 
-      // Tự động tìm và chuyển các cột dạng "0.x" hoặc "-0.x" thành phần trăm (bao gồm số âm)
-      const formattedText = text.replace(
-        /\|\s*(-?0\.\d{2,20})/g,
-        (match, num) => {
-          const value = parseFloat(num);
-          const percent = (value * 100).toFixed(2) + "%";
-          return `| ${percent.padStart(6, " ")}`;
-        },
-      );
+      // Nếu giá trị trong sheet đã là phần trăm (>=1 hoặc <=-1) thì giữ nguyên,
+// chỉ nhân 100 nếu là số nhỏ hơn 1 (ví dụ 0.5 => 50%)
+const formattedText = text.replace(
+  /\|\s*(-?\d*\.?\d+)/g,
+  (match, num) => {
+    const value = parseFloat(num);
+    if (Math.abs(value) < 1 && value !== 0) {
+      const percent = (value * 100).toFixed(2) + "%";
+      return `| ${percent.padStart(6, " ")}`;
+    } else {
+      // nếu đã là số nguyên hoặc số lớn hơn 1, chỉ thêm ký hiệu %
+      return `| ${value.toFixed(2)}%`;
+    }
+  }
+);
+
 
       await interaction.editReply(
         `📊 **SKU:** **${sku}**\n\`\`\`\n${formattedText}\n\`\`\``,
