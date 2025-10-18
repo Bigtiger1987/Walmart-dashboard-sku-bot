@@ -35,33 +35,32 @@ client.on("interactionCreate", async (interaction) => {
       const response = await fetch(`${SCRIPT_URL}?sku=${sku}`);
       let text = await response.text();
 
-      // === Format lại phần trăm đúng logic Walmart ===
-      // Nhận dạng các dòng có dữ liệu, chỉ xử lý cột % Growth (index 4)
-      const formattedText = text
-        .split("\n")
-        .map((line) => {
-          if (/^\d/.test(line)) {
-            const parts = line.split("|").map((p) => p.trim());
-            if (parts.length >= 6) {
-              let growth = parseFloat(parts[4]);
-              if (!isNaN(growth)) {
-                // Nếu growth là 0.x → nhân 100 (0.5 -> 50%)
-                // Nếu growth là số nguyên (1, 20, -100, 2000) → giữ nguyên
-                if (Math.abs(growth) < 1 && growth !== 0) {
-                  growth = (growth * 100).toFixed(2) + "%";
-                } else {
-                  growth = growth.toFixed(2) + "%";
-                }
-              } else {
-                growth = parts[4];
-              }
-              parts[4] = growth;
-              return parts.join(" | ");
-            }
+     // === Format lại phần trăm chính xác cho Walmart ===
+const formattedText = text
+  .split("\n")
+  .map((line) => {
+    if (/^\d/.test(line)) {
+      const parts = line.split("|").map((p) => p.trim());
+      if (parts.length >= 6) {
+        let growth = parseFloat(parts[4]);
+        if (!isNaN(growth)) {
+          // Chỉ nhân 100 nếu giá trị nằm giữa -1 và 1 (ví dụ 1 => 100%, 0.5 => 50%)
+          if (Math.abs(growth) < 1 && growth !== 0) {
+            growth = (growth * 100).toFixed(2) + "%";
+          } else {
+            growth = growth.toFixed(2) + "%";
           }
-          return line;
-        })
-        .join("\n");
+        } else {
+          growth = parts[4];
+        }
+        parts[4] = growth;
+        return parts.join(" | ");
+      }
+    }
+    return line;
+  })
+  .join("\n");
+
 
       await interaction.editReply(
         `📊 **SKU:** **${sku}**\n\`\`\`\n${formattedText}\n\`\`\``,
